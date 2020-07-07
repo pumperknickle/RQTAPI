@@ -29,7 +29,7 @@ all_match_ents = []
 
 for path in Path(dirname).rglob('*'):
     if path.is_file() and not (os.path.basename(path).startswith('.')) and not (
-            os.path.basename(path) == 'RQT_report.html') and not (os.path.basename(path).endswith('html')):
+            os.path.basename(path) == 'RQT_report.html') and not (os.path.basename(path).endswith('html')) and not (os.path.basename(path).endswith('git')) and not (os.path.basename(path).endswith('.DS_Store')):
         if path.suffix == ".docx":
             doc_texts = getTextFromDoc(path)
             texts.append((doc_texts, path))
