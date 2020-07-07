@@ -1,10 +1,7 @@
 import spacy
 from spacy.matcher import Matcher
 from spacy.matcher import PhraseMatcher
-from quantulum3 import parser
 import en_core_web_sm
-import re
-import string
 
 spacy.prefer_gpu()
 nlp = en_core_web_sm.load()
@@ -13,10 +10,11 @@ def get_matches(matcher, doc):
     matches = matcher(doc)
     match_ents = []
     for match_id, start, end in matches:
-        char_idx = get_character_indices(doc[start])
+        start_idx = get_character_indices(doc[start])
+        end_idx = get_character_indices(doc[end - 1])
         match_ents.append({
-            "start": char_idx[0],
-            "end": char_idx[1]
+            "start": start_idx[0],
+            "end": end_idx[1]
         })
     return match_ents
 
@@ -25,34 +23,32 @@ def get_character_indices(start_token):
     end = start_token.idx + len(start_token)
     return (start, end)
 
-def rule_based_matching(doc, match_adverbs = False, match_passives = False, match_infinitives = False, match_pronouns = False, match_comparators = False):
-    matcher = Matcher(nlp.vocab)
-    if match_adverbs:
-        adverbPattern = [{"POS": "ADV", "ORTH": {"REGEX": "\w+ly"}}]
-        matcher.add("Adverbs", None, adverbPattern)
-    if match_passives:
-        passivePattern1 = [{"LEMMA": "be"}, {"TAG": "VBD"}]
-        passivePattern2 = [{"LEMMA": "be"}, {"TAG": "VBN"}]
-        matcher.add("Passive", None, passivePattern1, passivePattern2)
-    if match_infinitives:
-        infinitivePattern1 = [{"LOWER": "be"}, {"POS": "ADJ"}, {"POS": "ADP"}]
-        infinitivePattern2 = [{"LOWER": "to"}, {"POS": "VERB"}]
-        matcher.add("Infinitive", None, infinitivePattern1, infinitivePattern2)
-    if match_pronouns:
-        pronounPattern = [{"POS": "PRON"}]
-        matcher.add("Pronoun", None, pronounPattern)
-    if match_comparators:
-        comparatorPattern1 = [{"ORTH": {"REGEX": "\w+er"}}, {"LOWER": "than"}]
-        comparatorPattern2 = [{"LOWER": "less"}, {"LOWER": "than"}]
-        comparatorPattern3 = [{"LOWER": "more"}, {"LOWER": "than"}]
-        comparatorPattern4 = [{"LOWER": "maximum"}]
-        comparatorPattern5 = [{"LOWER": "minimum"}]
-        comparatorPattern6 = [{"LOWER": "over"}]
-        matcher.add("Comparator", None, comparatorPattern1, comparatorPattern2, comparatorPattern3, comparatorPattern4,
-                    comparatorPattern5, comparatorPattern6)
-    return get_matches(matcher, doc)
-
-def phrase_based_matching(doc, match_indefinite_articles = False, 
+# def rule_based_matching(doc, match_adverbs = False, match_passives = False, match_infinitives = False, match_pronouns = False, match_comparators = False):
+#     matcher = Matcher(nlp.vocab)
+#     if match_adverbs:
+#         adverbPattern = [{"POS": "ADV", "ORTH": {"REGEX": "\w+ly"}}]
+#         matcher.add("Adverbs", None, adverbPattern)
+#     if match_passives:
+#         passivePattern1 = [{"LEMMA": "be"}, {"TAG": "VBD"}]
+#         passivePattern2 = [{"LEMMA": "be"}, {"TAG": "VBN"}]
+#         matcher.add("Passive", None, passivePattern1, passivePattern2)
+#     if match_infinitives:
+#         infinitivePattern1 = [{"LOWER": "be"}, {"POS": "ADJ"}, {"POS": "ADP"}]
+#         infinitivePattern2 = [{"LOWER": "to"}, {"POS": "VERB"}]
+#         matcher.add("Infinitive", None, infinitivePattern1, infinitivePattern2)
+#     if match_pronouns:
+#         pronounPattern = [{"POS": "PRON"}]
+#         matcher.add("Pronoun", None, pronounPattern)
+#     if match_comparators:
+#         comparatorPattern1 = [{"ORTH": {"REGEX": "\w+er"}}, {"LOWER": "than"}]
+#         comparatorPattern2 = [{"LOWER": "less"}, {"LOWER": "than"}]
+#         comparatorPattern3 = [{"LOWER": "more"}, {"LOWER": "than"}]
+#         comparatorPattern4 = [{"LOWER": "maximum"}]
+#         comparatorPattern5 = [{"LOWER": "minimum"}]
+#         comparatorPattern6 = [{"LOWER": "over"}]
+#         matcher.add("Comparator", None, comparatorPattern1, comparatorPattern2, comparatorPattern3, comparatorPattern4,
+#                     comparatorPattern5, comparatorPattern6)
+#     return get_matches(matcher, doc)
 
 def get_adverbs(doc):
     matcher = Matcher(nlp.vocab)
